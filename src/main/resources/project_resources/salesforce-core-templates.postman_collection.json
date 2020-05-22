@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "6d7b804c-d41a-4fa3-8516-c73ad8e03723",
+		"name": "salesforce-core-templates",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "bulk-operations",
+			"item": [
+				{
+					"name": "upsert-contacts(success + error records)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer a978d207-5f69-45c0-9823-cd2e989e2057"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n\n   {\n\n     \"LastName\":\"Vangala\",\n\n      \"Description\" : \"Industrial Cleaning Supply Company\",\n\n      \"AccountId\" : \"0015w00002ACqD2ABL\"\n\n   },\n\n   {\n\n      \"LastName\":\"Vangala\",\n\n      \"Description\" : \"Law firm. New York Headquarters\",\n\n      \"AccountId\" : \"0015w00002ACqD2AAL\"    \n\n   },\n\n    {\n\n      \"LastName\":\"Sriramoju\",\n\n      \"Description\" : \"Srikanth's request\",\n\n      \"AccountId\" : \"0015w00002ACqD4CAL\"    \n\n   }\n\n]"
+						},
+						"url": {
+							"raw": "http://localhost:8082/api/contacts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"contacts"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "sf-rest-api",
+			"item": [
+				{
+					"name": "invoke-sf-rest-api",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "leads",
+			"item": [
+				{
+					"name": "create-leads",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"Company\": \"Aliquam Tincidunt Nunc LLC\",\n    \"Email\": \"faucibus@egetmetus.org\",\n    \"FirstName\": \"Ishmael\",\n    \"LastName\": \"Alexander\"\n  },\n  {\n    \"Company\": \"Eu Odio PC\",\n    \"Email\": \"sem.egestas@mollis.org\",\n    \"FirstName\": \"Cole\",\n    \"LastName\": \"Burks\"\n  }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8082/api/leads",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"leads"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "crud",
+			"item": [
+				{
+					"name": "create-contact",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\n  {\n    \"FirstName\": \"Srikanthh\",\n    \"Id\": \"0035w000034nmgnAAA\",\n    \"LastName\": \"Sriramojuu\",\n    \"type\": \"Contact\"\n  }\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8082/api/contact",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-contact",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete-contact",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/contact/0035w000034nmgnAAA",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"contact",
+								"0035w000034nmgnAAA"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-contact",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/contact/0035w000034nmgnAAA",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"contact",
+								"0035w000034nmgnAAA"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

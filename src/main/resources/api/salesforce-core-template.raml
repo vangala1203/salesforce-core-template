@@ -1,0 +1,64 @@
+#%RAML 1.0
+version: v1
+title: salaesforce-core-template
+description: salesforce core template
+baseUri: http://0.0.0.0:8081/api
+ 
+#this resource implements Bulk API V2 of the salesforce connector
+/contacts:
+    post:
+      body:
+        application/json:
+      
+      responses:
+        200:
+          body:
+            application/json:
+            
+#this resource implements upsert operation on Leads Object using salesforce connector
+/leads:
+    post:
+      body:
+        application/json:
+      
+      responses:
+        200:
+          body:
+            application/json:
+            
+#this resource implements insert operation on contacts object salesforce connector
+/contact:
+    post:
+      body:
+        application/json:
+      responses:
+        200:
+          body:
+            application/json:
+    /{id}:
+      put:
+        body:
+          application/json:
+        responses:
+          200:
+            body:
+              application/json:
+      delete:
+        responses:
+          200:
+            body:
+              application/json:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+     
+            
+#this resource implements Rest API using Apex Classes 
+/account:
+    get:
+      responses:
+        200:
+          body:
+            application/json:

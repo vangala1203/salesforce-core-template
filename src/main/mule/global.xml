@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd">
+	<apikit:config name="salesforce-core-template-config"
+		api="salesforce-core-template.raml"
+		outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
+	<!-- <salesforce:sfdc-config name="Salesforce_Config_BasicAuth" doc:name="Salesforce 
+		Config" doc:id="ba385a7f-8406-4abe-9c28-89bea28faae9"> <salesforce:basic-connection 
+		username="${secure::salesforce.userName}" password="${secure::salesforce.password}" 
+		securityToken="${secure::salesforce.securityToken}" url="${secure::salesforce.authorizationURL}" 
+		objectTTL="${secure::salesforce.connection.ttl}" maxEntries="${secure::salesforce.connection.entries}"> 
+		<reconnection> <reconnect frequency="${secure::salesforce.connection.frequency}" 
+		count="${secure::salesforce.connection.attempts}" /> </reconnection> </salesforce:basic-connection> 
+		</salesforce:sfdc-config> -->
+	<secure-properties:config
+		name="Secure_Properties_Config" doc:name="Secure Properties Config"
+		doc:id="804ce368-a198-4cd2-bc95-56a4c9145ceb"
+		file="salesforce-core-${mule.env}.yaml" key="${mule.key}" />
+	<global-property doc:name="Global Property"
+		doc:id="ef17f389-5b05-4c06-a675-beb94bed21df" name="mule.env"
+		value="qa" />
+
+	<global-property doc:name="Global Property"
+		doc:id="6cb814bd-c988-41c9-90e5-f75bcb964359" name="mule.key"
+		value="Mulesoft12345678" />
+	<!-- <http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="b59d113b-558b-40ff-80ff-97b389672261">
+
+		<http:listener-connection host="0.0.0.0"
+			port="${secure::http.port}" />
+
+	</http:listener-config> -->
+
+	<!--<salesforce:sfdc-config name="Salesforce_Config_OAuth" doc:name="Salesforce 
+		Config" doc:id="2bd30220-6dab-41d1-8d0f-f0b5b053674b" fetchAllApexRestMetadata="true"> 
+		<salesforce:oauth-user-pass-connection consumerKey="${secure::salesforce.consumerKey}" 
+		consumerSecret="${secure::salesforce.consumerSecret}" username="${secure::salesforce.userName}" 
+		password="${secure::salesforce.password}" securityToken="${secure::salesforce.securityToken}" 
+		tokenEndpoint="${secure::salesforce.tokenURL}" objectTTL="${secure::salesforce.connection.ttl}" 
+		maxEntries="${secure::salesforce.connection.entries}"> <reconnection> <reconnect 
+		frequency="${secure::salesforce.connection.frequency}" count="${secure::salesforce.connection.attempts}" 
+		/> </reconnection> </salesforce:oauth-user-pass-connection> </salesforce:sfdc-config> -->
+	<!-- <att-mule-applicationlogger:config name="ATT_Mule_Application_Logger_Config" 
+		doc:name="ATT Mule Application Logger Config" doc:id="ad555fd5-9110-4de0-9043-50c168b91275" 
+		/> -->
+	<http:request-config name="HTTP_Request_config"
+		doc:name="HTTP Request configuration"
+		doc:id="137c8ab3-3232-4b01-91e6-75686cda08ae"
+		basePath="${secure::salesforce.http.basePath}">
+		<http:request-connection
+			host="${secure::salesforce.http.host}"
+			port="${secure::salesforce.http.port}" protocol="HTTPS"
+			maxConnections="${secure::salesforce.http.maxConnections}"
+			connectionIdleTimeout="${secure::salesforce.http.connTimeout}">
+			<reconnection>
+				<reconnect
+					frequency="${secure::salesforce.http.reconFrequency}"
+					count="${secure::salesforce.http.reconAttempts}" />
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	<api-gateway:autodiscovery
+		apiId="${secure::api.id}" doc:name="API Autodiscovery"
+		doc:id="d2763476-ec8d-4770-b422-2bad1373c87f"
+		flowRef="salesforce-core-template-main" />
+	<import doc:name="Import" doc:id="48bff10c-c853-4714-afa7-47613071fe25" file="salesforce-config.xml"/>
+	<import doc:name="Import" doc:id="7179dcd4-cdd9-43a8-904a-d9bf7ed8f1e8" file="api-common-lib.xml" />
+</mule>

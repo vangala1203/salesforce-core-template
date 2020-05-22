@@ -1,0 +1,14 @@
+[
+  {
+    "errorMessage": "MALFORMED_ID:Account ID: id value of incorrect type: 0015w00002ACqD2ABL:AccountId --",
+    "id": ""
+  },
+  {
+    "errorMessage": "MALFORMED_ID:Account ID: id value of incorrect type: 0015w00002ACqD4CAL:AccountId --",
+    "id": ""
+  },
+  {
+    "errorMessage": "INVALID_FIELD:Number of fields in header is different from the row. header = 3 row = 2:--",
+    "id": ""
+  }
+]

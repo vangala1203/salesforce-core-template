@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd">
+	<flow name="salesforce-core-template-main">
+		<http:listener config-ref="HTTP_Listener_config"
+			path="/api/*">
+			<http:response
+				statusCode="#[vars.httpStatus default 200]">
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:response>
+			<http:error-response
+				statusCode="#[vars.httpStatus default 500]">
+				<http:body>#[payload]</http:body>
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:error-response>
+		</http:listener>
+		<apikit:router
+			config-ref="salesforce-core-template-config" />
+	</flow>
+
+	<flow
+		name="put:\contact\(id):application\json:salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="d66590ef-12f6-4430-b38d-047c21d1e565"
+			config-ref="ATT_Mule_Application_Logger_Config" method="put:\contact"
+			message="Start of flow  put:\contact"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-update-contact-sub-flow"
+			doc:id="7ce25a36-e03f-41fc-a362-c6e47330b3b2"
+			name="update-contact-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="d9d02ec3-3444-4625-98d8-b5324e02da12"
+			config-ref="ATT_Mule_Application_Logger_Config" method="put:\contact"
+			message="End of flow  put:\contact" doc:name="log-end" />
+	</flow>
+	<flow name="delete:\contact\(id):salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="71f19e26-63aa-4af7-8564-a629ab5b4180"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="delete:\contact" message="Start of flow  delete:\contact"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-delete-contact-sub-flow"
+			doc:id="8e0760da-a9f1-4935-8f98-dd1102c0f32c"
+			name="delete-contact-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="54ea7cd0-7e71-4a11-9cf8-19c9a9708b11"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="delete:\contact" message="End of flow  delete:\contact"
+			doc:name="log-end" />
+	</flow>
+	<flow name="get:\account:salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="94d3acb7-c920-407a-a06c-ef0877144f6b"
+			config-ref="ATT_Mule_Application_Logger_Config" method="get:\sf-api"
+			message="Start of flow  get:\sf-api"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-invoke-apex-rest-api-sub-flow"
+			doc:id="8dcb2216-219f-4422-88e8-efb85ed5bc48"
+			name="invoke-apex-rest-api-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="b3887a95-88e6-4b70-9d93-3841801233c3"
+			config-ref="ATT_Mule_Application_Logger_Config" method="get:\sf-api"
+			message="End of flow  get:\sf-api" doc:name="log-end" />
+	</flow>
+	<flow name="get:\contact\(id):salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="459b81cb-594d-4d49-9f22-bf6135ed7a69"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="get:\accounts" message="Start of flow  get:\accounts"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-query-all-sub-flow"
+			doc:id="8eb2aeeb-981d-4bcc-9707-a9c1409f3125"
+			name="query-all-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="fd93fc63-5101-4651-b989-e0caab5767b0"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="get:\accounts" message="End of flow  get:\accounts"
+			doc:name="log-end" />
+	</flow>
+	<flow
+		name="post:\contact:application\json:salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="55869a9d-5f84-4b12-840a-ba21e8532ec8"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\contact" message="Start of flow  post:\contact"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-upsert-contact-sub-flow"
+			doc:id="97016171-fa1b-4b0a-8c39-40c777b8bf13"
+			name="upsert-contact-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="54a1d9dc-a578-40dc-81c3-b2f15bb2f18d" method="post:\contacts"
+			message="End of flow  post:\contacts" doc:name="log-end"
+			config-ref="ATT_Mule_Application_Logger_Config" />
+	</flow>
+	<flow
+		name="post:\contacts:application\json:salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="564279f8-5e1e-4e55-a404-4c249abdb95f" doc:name="log-start"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\contacts" message="Start of flow  post:\contacts"
+			reqHeaders="#[attributes.headers]" />
+		<flow-ref doc:name="call-process-contacts-bulk-sub-flow"
+			doc:id="2d7a8414-7fac-4778-8850-33c53728a2ce"
+			name="process-contacts-bulk-sub-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="667ad593-9238-4787-b112-b918c5cf38e6" doc:name="log-end"
+			method="post:\contacts" message="End of flow  post:\contacts"
+			config-ref="ATT_Mule_Application_Logger_Config" />
+	</flow>
+	<flow
+		name="post:\leads:application\json:salesforce-core-template-config">
+		<att-mule-applicationlogger:log-message
+			doc:id="d41b84ad-7c74-4c4c-bcf0-f968927af727"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="Start of flow  post:\leads"
+			reqHeaders="#[attributes.headers]" doc:name="log-start" />
+		<flow-ref doc:name="call-import-leads-into-salesforceFlow"
+			doc:id="e8b093a3-0b38-4f9c-a28b-dcc53e9d7f12"
+			name="import-leads-into-salesforce-flow" />
+		<att-mule-applicationlogger:log-message
+			doc:id="f71e0b87-9c23-4a9a-8797-53553c4c8c12"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="End of flow  post:\leads" doc:name="log-end" />
+	</flow>
+</mule>

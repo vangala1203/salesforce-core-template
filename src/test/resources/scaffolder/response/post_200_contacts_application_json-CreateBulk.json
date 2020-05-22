@@ -1,0 +1,23 @@
+{
+	"lineEnding": "LF",
+	"numberRecordsFailed": 0,
+	"externalIdFieldName": "Id",
+	"numberRecordsProcessed": 0,
+	"errorMessage": null,
+	"systemModstamp": "2020-05-05T17:50:23.000+0000",
+	"apiActiveProcessingTime": 0,
+	"concurrencyMode": "Parallel",
+	"retries": 0,
+	"apexProcessingTime": 0,
+	"apiVersion": "46.0",
+	"createdDate": "2020-05-05T17:50:23.000+0000",
+	"id": "7505w00000LVfipAAD",
+	"state": "UploadComplete",
+	"jobType": "V2Ingest",
+	"totalProcessingTime": 0,
+	"contentType": "CSV",
+	"operation": "upsert",
+	"createdById": "0055w00000CPCy9AAH",
+	"object": "Contact",
+	"columnDelimiter": "COMMA"
+}

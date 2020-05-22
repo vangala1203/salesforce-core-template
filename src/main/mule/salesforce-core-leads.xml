@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd">
+
+	<sub-flow name="insert-leads-merge-sub-flow"
+		doc:id="97ded111-fde5-4ea4-9b4c-57d7d0418d33">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="e2f88475-3f3e-44bd-af7e-81bf30946c1e"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="Start of flow  insert-leads-sub-flow" />
+		<salesforce:query
+			config-ref="Salesforce_Config_OAuth" doc:name="Find lead"
+			doc:id="55cb4cd2-a0f3-4949-819c-6b723ce42bd2" target="leadID">
+			<salesforce:salesforce-query>SELECT Id FROM Lead WHERE Email =
+				':email'</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"email" : payload.Email
+}]]]></salesforce:parameters>
+
+		</salesforce:query>
+		<ee:transform doc:name="transform-to-payload-array"
+			doc:id="078984dd-b146-4ae0-9a57-fdf4cf7aef92">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[payload]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create
+			config-ref="Salesforce_Config_OAuth" type="Lead"
+			doc:name="Insert Lead" doc:id="3eb9ff40-a6de-4484-8584-383f4cea72ea" />
+		<ee:transform doc:name="transform-payload-to-java"
+			doc:id="fe089161-a778-464f-b429-7b9a17535b4e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="7aa3bef2-d9e0-42af-9467-55071fc2af70" >
+			<when expression='#[payload.items[0].statusCode != "DUPLICATES_DETECTED"]'>
+				<choice doc:name="Choice" doc:id="98eae5d1-9956-408d-b9ff-4ea80d3f0f55">
+			<when expression="#[sizeOf(vars.leadID) == 0]">
+				<att-mule-applicationlogger:log-message doc:name="log-no-merge" doc:id="adc256ba-21b5-429a-ae9f-ee1de367340c" config-ref="ATT_Mule_Application_Logger_Config" message="Lead inserted without any merging" />
+			</when>
+			<otherwise>
+						<ee:transform doc:name="masterID" doc:id="49cb61d0-9da3-4bda-9ed8-e2c32ccb7c1c">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Id":payload.items[0].id,
+	"type":"Lead"
+}]]></ee:set-payload>
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="masterID" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.items[0].id]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<salesforce:merge type="Lead" doc:name="Merge" doc:id="dbeb1806-720d-4cf1-83ff-a99b64a0061c" config-ref="Salesforce_Config_OAuth">
+					<salesforce:ids><![CDATA[#[vars.leadID.Id]]]></salesforce:ids>
+							<salesforce:master-record ><![CDATA[#[payload]]]></salesforce:master-record>
+				</salesforce:merge>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="dd44ef20-399a-4ae6-a9e0-0bc5b05fc8a9" message="Test"/>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="transform-payload-to-java" doc:id="6bad7237-b09e-40b8-9fb3-fbdd88555d98" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="leadResult" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.leadResult + payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="823cd6ee-ddc7-402e-b05a-5d7d30366585"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="End of flow  insert-leads-sub-flow" />
+	</sub-flow>
+	<flow name="import-leads-into-salesforce-flow">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="4d138c0d-41f2-4632-b621-4fbe636e0a57"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="Start of flow  import-leads-into-salesforce-flow" />
+		<ee:transform doc:name="transform-payload-to-java"
+			doc:id="9efc10a0-32d0-4f57-9357-c0dc8e5b7497">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="leadMerge" ><![CDATA[%dw 2.0
+output application/java
+---
+p('secure::leadMerge')]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[[]]" doc:name="leadResult" doc:id="a4e60701-4905-434d-a63f-3b41c1d93b5c" variableName="leadResult"/>
+		<foreach doc:name="For Each"
+			doc:id="f872f7be-a859-47f0-a5c0-022ff9fd66b8" collection="#[payload]">
+			<choice doc:name="Choice" doc:id="d6d239ed-6dfb-46ba-be6b-4c07f1a3b464" >
+				<when expression='#[vars.leadMerge == "enabled"]'>
+					<flow-ref doc:name="insert-leads-merge-sub-flow" doc:id="bc1c5bcb-657c-4d89-9aea-f623b6c84adb" name="insert-leads-merge-sub-flow" />
+				</when>
+				<otherwise >
+					<flow-ref doc:name="upsert-lead-sub-flow" doc:id="8a9b474b-54f7-4998-9d3d-b78f6fd30b04" name="upsert-lead-sub-flow"/>
+				</otherwise>
+			</choice>
+		</foreach>
+		<ee:transform doc:name="transform-response-to-json" doc:id="454aec61-ba8e-431c-ad64-de91a4cdcc28" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.leadResult]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="53fe911c-31c0-4af3-876c-577677c6d21a"
+			config-ref="ATT_Mule_Application_Logger_Config" method="post:\leads"
+			message="End of flow  import-leads-into-salesforce-flow" />
+
+	</flow>
+	<sub-flow name="upsert-lead-sub-flow"
+		doc:id="839d2b51-dbaa-44fa-9ab8-dfc8a143abdd">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="a71f9a48-3dab-440a-a422-336d45994881"
+			message="Start of flow upsert-lead-sub-flow"
+			method="post:\contact"
+			config-ref="ATT_Mule_Application_Logger_Config" />
+		<salesforce:upsert doc:name="call-salesforce-upsert"
+			doc:id="ca71d22d-2735-4c61-92f9-12fd157dc2b9"
+			config-ref="Salesforce_Config_OAuth" objectType="Lead"
+			externalIdFieldName="Id" >
+			<salesforce:records ><![CDATA[#[[payload]]]]></salesforce:records>
+		</salesforce:upsert>
+		<ee:transform doc:name="convert-response-to-json"
+			doc:id="151a7579-66e8-4743-ba6b-10c6ffb05fa3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice"
+			doc:id="cb2044ee-c2ec-47e8-96f7-c3dc49913b74">
+			<when
+				expression="#[(payload[0].errors[0].message == null) or (payload[0].errors[0] == null)]">
+				<logger level="INFO" doc:name="log-no-error"
+					doc:id="deed0b24-b12f-41c2-bfc5-44f25881e244"
+					message="log-no-errors-returned-from-salesforce" />
+				<att-mule-applicationlogger:log-message
+					doc:name="Log Message"
+					doc:id="106a733d-5299-49f5-9b3e-35028e993f87"
+					message="log-no-errors-returned-from-salesforce"
+					method="post:\contact"
+					config-ref="ATT_Mule_Application_Logger_Config" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="log-error"
+					doc:id="a336e9a6-2feb-42a8-8e77-6cfb88005810"
+					message="log-received-error-from-salesforce-or-retrying-message" />
+				<att-mule-applicationlogger:log-message
+					doc:name="Log Message"
+					doc:id="dc4349b0-c1ea-4b7b-8f6d-ef906299b10a"
+					method="post:\contact"
+					message="log-received-error-from-salesforce-or-retrying-message"
+					config-ref="ATT_Mule_Application_Logger_Config" />
+			</otherwise>
+		</choice>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="17f62269-40b2-4cf0-8eb3-91b7df7885db"
+			method="post:\lead" message="End of flow upsert-lead-sub-flow"
+			config-ref="ATT_Mule_Application_Logger_Config" />
+	</sub-flow>
+</mule>

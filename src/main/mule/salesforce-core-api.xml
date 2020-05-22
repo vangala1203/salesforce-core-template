@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd 
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+
+	<sub-flow name="invoke-apex-rest-api-sub-flow"
+		doc:id="e50d78ed-35d6-4a87-b82d-96c1cb32531e">
+		<att-mule-applicationlogger:log-message
+			doc:id="09793c6b-bb3a-4d94-ab94-68d0fba1c4a1"
+			config-ref="ATT_Mule_Application_Logger_Config" method="get:\sf-api"
+			message="Start of invoke-apex-rest-api-sub-flow" doc:name="log-start" />
+		<salesforce:invoke-apex-rest-method
+			doc:name="invoke-apex-rest-method"
+			doc:id="83f59265-5b57-4bf0-a3c2-f78e4a7f938b"
+			className="SampleRestApi"
+			methodName="getAccount^/SampleApiAccount/*^HttpGet^Account^"
+			config-ref="Salesforce_Config_BasicAuth">
+			<salesforce:request><![CDATA[#[{}]]]></salesforce:request>
+		</salesforce:invoke-apex-rest-method>
+		<ee:transform doc:name="transform-response-to-json"
+			doc:id="3660f2e3-a141-429a-af6d-bb18dff20d27">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="f8792734-6c14-4990-a29f-6858dca822be"
+			config-ref="ATT_Mule_Application_Logger_Config" method="get:\sf-api"
+			message="End of invoke-apex-rest-api-sub-flow" />
+	</sub-flow>
+	<sub-flow name="salesforce-access-token-sub-flow"
+		doc:id="818ce310-d461-4cd9-b739-64a3bc37c79d">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="3e0ddbf8-f493-4d37-8abd-897c30d58a6e"
+			message="Start of salesforce-access-token-sub-flow" />
+		<try doc:name="Try" doc:id="5361f725-e64d-4250-b673-131eb35f57d8">
+			<ee:cache doc:name="Cache"
+				doc:id="b194e25b-0942-4805-8658-d78e165845f0">
+				<att-mule-applicationlogger:log-message doc:name="log-start" doc:id="9236aa04-59e5-41c4-a9c1-0b7ad35d838d" config-ref="ATT_Mule_Application_Logger_Config" message='Start of Cache: "success"'/>
+				<http:request method="POST"
+					doc:name="POST/:get-access-token"
+					doc:id="97bb18bd-8755-4808-a1b7-76db70e6329d"
+					path="/services/oauth2/authorize" config-ref="HTTP_Request_config">
+					<http:body><![CDATA[#[output application/x-www-form-urlencoded
+	---
+	{
+		"grant_type": "password",
+		"username": p('secure::ringcentral.salesforce.username'),
+		"password" :  p('secure::ringcentral.salesforce.password'),
+		"extension":  p('secure::ringcentral.salesforce.extension')
+	}]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"Accept" : "application/json",
+	"Content-Type" : "application/x-www-form-urlencoded"
+}]]]></http:headers>
+
+				</http:request>
+				<ee:transform
+					doc:name="map-access-token-to-payload-token"
+					doc:id="3b07f516-d977-4d41-bde9-7fc2f88322c5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+	output application/json
+	---
+	{
+		token: payload.access_token
+	}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<att-mule-applicationlogger:log-message doc:name="log-end" doc:id="ef0be385-c759-462f-b584-cd7c615461c5" config-ref="ATT_Mule_Application_Logger_Config" message='End of Cache: "success"'/>
+			</ee:cache>
+			<error-handler>
+				<on-error-propagate enableNotifications="true"
+					logException="true" doc:name="On Error Propagate"
+					doc:id="f873be9c-09b2-436a-a0a3-f7c3647efd48"
+					type="HTTP:CONNECTIVITY, HTTP:NOT_FOUND, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT">
+					<att-mule-applicationlogger:log-message
+						doc:name="Log Message"
+						doc:id="58862bfb-9c10-484e-ae09-cbc31f7afaac"
+						message='#["Error on Login Request 1 " ++ error.description]' />
+					<set-variable value="#[error]"
+						doc:name="set-login-error"
+						doc:id="9692ead9-116c-480a-909c-f6b162b5c2f4"
+						variableName="loginerror" />
+					<ee:transform doc:name="map-token"
+						doc:id="5cfbcaba-2d65-41b9-94bb-207f69bbb51f">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	token: ""
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+				<on-error-continue enableNotifications="true"
+					logException="true" doc:name="On Error Continue"
+					doc:id="1897125a-a2a0-4ee8-82bd-97dd31d2985f">
+					<att-mule-applicationlogger:log-message
+						doc:name="Log Message"
+						doc:id="79223f1a-50e7-44c7-97a7-4f130bed7f28"
+						message='#["Error on Login Request 2 " ++ error.description]' />
+					<set-variable value="#[error]"
+						doc:name="set-login-error"
+						doc:id="b87a5042-1414-4e0a-8caa-7d88b4aaf8f1"
+						variableName="loginerror" />
+					<set-variable value="#[500]"
+						doc:name="set-response-status"
+						doc:id="a7f1786a-eda3-4cb5-8b3d-2015d42fed62"
+						variableName="login_respstatus" />
+					<ee:transform doc:name="map-token"
+						doc:id="8d21d287-c8d6-4d0a-a45c-2e209a2b4199">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	token: ""
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="34ddfded-2c14-4bfe-9cb1-d18d24eed5cd"
+			message="End of salesforce-access-token-sub-flow" />
+	</sub-flow>
+	<sub-flow name="salesforce-core-api-flow"
+		doc:id="5dc0691c-f03a-4a19-9588-c4f4711102de">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="d93281e5-55e7-4711-8d0d-26d0d343ff78"
+			message="Start of salesforce-message-sub-flow" />
+		<flow-ref doc:name="call-salesforce-access-token-sub-flow"
+			doc:id="8cc35123-b5b7-4882-a683-e7fb118932c8"
+			name="salesforce-access-token-sub-flow" />
+		<http:request method="GET"
+			doc:name="get-account"
+			doc:id="b12ed21a-b0e5-4e12-b203-16f3287807b8"
+			path="${secure::salesforce.http.accountPath}"
+			config-ref="HTTP_Request_config">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer " ++ payload.token,
+	"content-type" : "application/json"
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"chatId" : vars.myVars.salesforceChatId
+}]]]></http:uri-params>
+		</http:request>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="0e9591a1-45cc-4028-ba21-ccebe9acb468"
+			message="End of salesforce-message-sub-flow" />
+	</sub-flow>
+</mule>
+	

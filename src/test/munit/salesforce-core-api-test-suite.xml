@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="salesforce-core-template-test-suite.xml" />
+	<munit:test name="salesforce-core-template-test-suite-get:\account:salesforce-core-template-configTest" doc:id="4caa82d8-e245-484b-a9c2-7242910d302c" description="Test" timeOut="400000">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-invoke-apex-rest-method" doc:id="ae436fc1-a133-4a18-b765-241c2335c08f" processor="salesforce:invoke-apex-rest-method">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="invoke-apex-rest-method" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="83f59265-5b57-4bf0-a3c2-f78e4a7f938b" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="SampleRestApi" attributeName="className" />
+					<munit-tools:with-attribute whereValue="getAccount^/SampleApiAccount/*^HttpGet^Account^" attributeName="methodName" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_BasicAuth" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/invoke-apex-rest-method-sample-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-sfdc-response-to-json-transfrom-message" doc:id="bac9c6b5-82a6-4395-b17b-06adfc3b85ae" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="transform-response-to-json" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="3660f2e3-a141-429a-af6d-bb18dff20d27" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call>
+					<munit-tools:assert-equals doc:name="assert-equals-Phone" doc:id="8a813e41-6ef5-4183-a1a9-a769e4140ffc" actual="#[payload.getAccountOutput.Phone]" expected='#["(650) 867-3450"]' message='"Check if Phone Number exists in the sfdc response"'/>
+					<munit-tools:assert-equals doc:name="assert-equals-Website" doc:id="ce323c14-6bbc-4fa1-90b1-219606136dd5" actual="#[payload.getAccountOutput.Website]" expected='#["www.genepoint.com"]' message='"Check if Website field exists in the sfdc response"'/>
+					<munit-tools:assert-equals doc:name="assert-equals-url" doc:id="c4030c1d-73d2-4130-a5f4-c018db6e53d1" actual="#[payload.getAccountOutput.attributes.url]" expected='#["/services/data/v48.0/sobjects/Account/0015w00002ACqDAAA1"]' message='"Check if url exists in the sfdc response"'/>
+				</munit-tools:before-call>
+				<munit-tools:after-call>
+					<munit-tools:assert-equals doc:name="assert-equals-Name" doc:id="596d93be-0f91-4bc5-ba00-f7461d31e3f2" actual="#[payload.getAccountOutput.Name]" expected='#["GenePoint"]' message='"Check if Name exists after the transformation response"'/>
+					<munit-tools:assert-equals doc:name="assert-equals-'type'" doc:id="acbaf588-01f3-4eee-9b6b-0944cc88f625" actual="#[payload.getAccountOutput.attributes.'type']" expected='#["Account"]' message='"Check if Account after the transformation response"'/>
+					<munit-tools:assert-equals doc:name="assert-equals-Id" doc:id="3738c396-ee14-4aad-9dd2-742f0dba9c2e" actual="#[payload.getAccountOutput.Id]" expected='#["0015w00002ACqDAAA1"]' message='"Check if Id after the transformation response"'/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="flow-ref-to-get:\account:salesforce-core-template-config" doc:id="9f6c2c58-3773-405b-bd24-8b9b0026c0b7" name="get:\account:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="verify-att-mule-application-start-logger" doc:id="5be99cd1-91b5-40a8-b823-ebca5f5c374f" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="94d3acb7-c920-407a-a06c-ef0877144f6b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-att-mule-application-start-logger" doc:id="0df306bf-0e91-4b4f-8890-bcb692cb3d29" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="b3887a95-88e6-4b70-9d93-3841801233c3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-contact-id-invalid-id-test" doc:id="87eedbed-fba1-48af-a695-33d627c160ac" description="Test" timeOut="400000" expectedErrorType="MULE:UNKNOWN">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-get-contacts" doc:id="a784157e-c573-4189-b5d3-101a5347209a" processor="salesforce:invoke-apex-rest-method">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="invoke-apex-rest-method" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="83f59265-5b57-4bf0-a3c2-f78e4a7f938b" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="SampleRestApi" attributeName="className" />
+					<munit-tools:with-attribute whereValue="getAccount^/SampleApiAccount/*^HttpGet^Account^" attributeName="methodName" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_BasicAuth" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/get-contacts-response.json')]" mediaType="application/json" />
+					<munit-tools:error typeId="MULE:UNKNOWN" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-uriParams-id" doc:id="434ecf54-6a8a-45e2-a9da-a605d26b0431" >
+				<munit:attributes value='#[{"uriParams": {"id": "1"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="flow-ref-to-get:\account:salesforce-core-template-config" doc:id="6388e59f-eef9-4963-ac01-bc927fc7cc20" name="get:\contact\(id):salesforce-core-template-config"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-get:\contact\(id):salesforce-core-template-configTest" doc:id="aa0b83c4-c88f-475b-8528-10cfee653201" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-get-contacts" doc:id="6a111f63-5635-406f-a89e-3804a67fff7a" processor="salesforce:query-all">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="get-contacts" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="d9f21838-0f1a-4cd9-a256-74b9d2dcc328" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/get-contacts-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-transform-message-'extract-contact-id'" doc:id="c5cfd975-505c-4a2b-8af2-bac42ee80e66" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="extract-contact-id" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="a0b3c081-e1ad-4aaf-ac73-c89f9301d4d6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="assert-equals-uriParams-id" doc:id="31af7a39-8291-44e9-bec6-c9d844cb177c" actual="#[attributes.uriParams.id]" expected='#["0035w000034nmgnAAA"]'/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="assert-equals-vars-contactID" doc:id="15c4ce75-3dd3-4344-ba8c-d80c65ed2004" actual="#[vars.contactID]" expected='#["0035w000034nmgnAAA"]'/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-uriParams-id" doc:id="48dc1268-598b-4f45-b5c1-a0726027b8cd" >
+				<munit:attributes value='#[{"uriParams": {"id": "0035w000034nmgnAAA"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\contact\(id):salesforce-core-template-config" doc:id="e7615cab-bd44-40b0-9608-02bc8e60265f" name="get:\contact\(id):salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="assert-equals-firstname" doc:id="9979a714-db93-4a03-86cc-e2e58bdc54d3" actual="#[payload.FirstName[0]]" expected='#["Srikanth"]'/>
+			<munit-tools:assert-equals doc:name="assert-equals-lastname" doc:id="4475b9f3-8b15-4543-bf48-e21654876c28" actual="#[payload.LastName[0]]" expected='#["Sriramoju"]'/>
+			<munit-tools:assert-equals doc:name="assert-equals-Id" doc:id="0301eb8f-e637-4b07-8795-cc59c3c7b8a7" actual="#[payload.Id[0]]" expected='#["0035w000034nmgnAAA"]'/>
+			<munit-tools:assert-equals doc:name="assert-equals-type" doc:id="4eb00508-4424-4fda-9da4-54e2f55fcfde" actual="#[payload.'type'[0]]" expected='#["Contact"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-post:\contact:application\json:create-contact-test" doc:id="2742dfd3-dad8-43e6-a9ce-fee2330de529" description="Test" timeOut="400000">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-salesforce-config-OAuth" doc:id="3552c480-efa4-4dd4-bdd4-84c5cccafbac" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="call-salesforce-upsert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="ec38a6a7-28cc-4f7c-aba5-2f64fa112b8a" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Contact" attributeName="objectType" />
+					<munit-tools:with-attribute whereValue="Id" attributeName="externalIdFieldName" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/create-contacts-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-salesforce-config-OAuth-upsert-call" doc:id="ea187b59-ce4e-485e-85a4-00546b31913a" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="call-salesforce-upsert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="2a922ff0-8fbe-4951-8b3a-0da8bf99f439" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Lead" attributeName="objectType" />
+					<munit-tools:with-attribute whereValue="Id" attributeName="externalIdFieldName" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="assert-equals-id?" doc:id="e7b6908c-3022-4cf4-9b84-19dc4c17c6ae" actual="#[payload.id?]" expected="#[false]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="assert-equals-id?" doc:id="f19bcf71-da72-4ab5-a15a-fa2d7dc255c5" actual="#[payload.id?]" expected="#[true]"/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-create-contacts-request-payload" doc:id="23df56ea-7c16-4249-adab-4e58e6ffa3b2" >
+				<munit:payload value="#[MunitTools::getResourceAsString('sample_data/create-contacts-request.json')]" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\contact:application\json:salesforce-core-template-config" doc:id="4f02c3dc-2f38-4113-b885-d15a13c0ea0b" name="post:\contact:application\json:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="assert-equals-payload-created?" doc:id="b8b73488-7fed-4b0e-a84f-4258512aab06" actual="#[payload.items[0].payload.created]" expected="#[true]"/>
+			<munit-tools:assert-equals doc:name="assert-equals-id" doc:id="94f014ec-ed80-48e0-be5d-048f4844584e" actual="#[payload.items[0].id ]" expected='#["0035w000035zPHjAAM"]'/>
+			<munit-tools:assert-equals doc:name="assert-equals-successful?" doc:id="75b6cec8-dd30-48a7-a02a-77b2f60ccfc9" actual="#[payload.items[0].successful]" expected="#[true]"/>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="3fc3df31-63ce-4f88-99aa-923559d483da" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="55869a9d-5f84-4b12-840a-ba21e8532ec8" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="e3b6d5b6-154a-4d96-bbaa-10a8bba6b075" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="54a1d9dc-a578-40dc-81c3-b2f15bb2f18d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-post:\contact:application\json:upsert-contact-test" doc:id="0210ed99-bc91-4c5f-b983-13e320b94c49" description="Test" timeOut="400000">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-salesforce-config-OAuth-upsert-call" doc:id="dccb849f-4eac-4f5d-85ba-57de82cef120" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="call-salesforce-upsert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="ec38a6a7-28cc-4f7c-aba5-2f64fa112b8a" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Contact" attributeName="objectType" />
+					<munit-tools:with-attribute whereValue="Id" attributeName="externalIdFieldName" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/upsert-contact-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-salesforce-config-OAuth-upsert-call" doc:id="4de14ce2-818f-460c-b7e2-7e654ec407d3" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="call-salesforce-upsert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="2a922ff0-8fbe-4951-8b3a-0da8bf99f439" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Lead" attributeName="objectType" />
+					<munit-tools:with-attribute whereValue="Id" attributeName="externalIdFieldName" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="assert-equals-id" doc:id="0d48240a-162c-4b8e-b69c-ed22ddacf8bf" actual="#[payload.id]" expected='#["0035w000035zPHjAAM"]'/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="assert-equals-id-after-call" doc:id="27175cb3-00a6-47e5-84f9-334c5d5745fa" actual="#[payload.id]" expected='#["0035w000035zPHjAAM"]'/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-upsert-contatc-request-payload" doc:id="522c7fec-588b-43db-aaae-98956391503f" >
+				<munit:payload value="#[MunitTools::getResourceAsString('sample_data/upsert-contact-request.json')]" mediaType="application/json" />
+
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\contact:application\json:salesforce-core-template-config" doc:id="96b0420e-ae4b-4cf2-98cc-947d148ee432" name="post:\contact:application\json:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="assert-equals-payload-created?" doc:id="5db87d42-6e1a-473d-9f76-0b2e25655485" actual="#[payload.items[0].payload.created]" expected="#[false]" />
+			<munit-tools:assert-equals doc:name="asset-equals-id" doc:id="50800b2b-a87d-440f-9977-fb64dc558ba5" actual="#[payload.items[0].id ]" expected='#["0035w000035zPHjAAM"]'/>
+			<munit-tools:assert-equals doc:name="assert-equals-payload-successful?" doc:id="87773104-3ea7-4ae0-9188-0f3214ea1d3e" actual="#[payload.items[0].successful]" expected="#[true]"/>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="86b24d27-a724-4efb-84fe-b08d772fec0d" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="55869a9d-5f84-4b12-840a-ba21e8532ec8" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="413796e5-7961-4371-bfc4-38cf49910740" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="54a1d9dc-a578-40dc-81c3-b2f15bb2f18d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		
+</munit:validation>
+	</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-post:\contacts:application\json:salesforce-core-template-configTest" doc:id="277bd8c3-0716-4fe1-ba1e-973ebda01324" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-salesforce-basic-auth-upsert" doc:id="96f642b8-de02-4390-b719-45ecca506b67" processor="salesforce:create-job-bulk-api-v2">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="upsert" attributeName="operation" />
+					<munit-tools:with-attribute whereValue="Create job bulk api v 2" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_BasicAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Contact" attributeName="objectType" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-bulk-create-job-response.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="mock-salesforce-config-OAuth-retrieve" doc:id="eb4bc991-0bde-4dda-87d2-d2596ba5baac" processor="salesforce:retrieve-job-failed-results-bulk-v2">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Retrieve job failed results bulk v 2" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-retrieve-bulk-job-response.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-create-job-bulk-upsert" doc:id="d0bce62d-8d16-4309-ba27-6b5357877d34" processor="salesforce:create-job-bulk-api-v2">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="upsert" attributeName="operation" />
+					<munit-tools:with-attribute whereValue="Create job bulk api v 2" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="90485a57-401e-4536-98f9-7486882a3ce8" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_BasicAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Contact" attributeName="objectType" />
+					<munit-tools:with-attribute whereValue="Id" attributeName="externalIdFieldName" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="assert-equals-size-of-payload" doc:id="32f6b4d9-9e7b-4612-901c-2bb7144177a7" actual="#[%dw 2.0 output application/json --- sizeOf(payload)]" expected='#["3"]'/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="assert-equals-number-of-failed-records" doc:id="dfccdfde-5f39-4109-a09d-4fa0a8846f80" actual="#[payload.numberRecordsFailed]" expected='#["3"]'/>
+					<munit-tools:assert-equals doc:name="assert-equals-id" doc:id="d8621711-365e-4a81-8fe0-48356de36c48" actual="#[payload.id]" expected='#["7505w00000M5WE2AAN"]' />
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		
+</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-bulk-contacts-request-payload" doc:id="235452eb-4ded-4dc3-813c-27e1d5e45046">
+				<munit:payload value="#[MunitTools::getResourceAsString('sample_data/bulk-contacts-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\contacts:application\json:salesforce-core-template-config" doc:id="6f2bc5e3-1f0d-4d1a-b134-53f05e4e095c" name="post:\contacts:application\json:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="assert-equals-final-size-of-payload" doc:id="d1180e02-6bce-4bc7-9f0a-98dab2cda3c4" actual="#[sizeOf(payload)]" expected='#[3]' message='"Number of Failed Records"'/>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-post:\leads:application\json:salesforce-core-template-configTest" doc:id="6a4beb15-f497-4bf9-a8e1-be3a3772ac9c" description="Test" timeOut="400000">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-salesforce-config-OAuth-find-lead" doc:id="cc475178-af62-4ffe-96db-27456cad5340" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Find lead" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="314af0f5-141b-4480-933a-342edf9fce07" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="leadID" attributeName="target" />
+					<munit-tools:with-attribute whereValue="314af0f5-141b-4480-933a-342edf9fce07" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-core-leads-find-lead-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="mock-salesforce-config-OAuth-insert-lead" doc:id="f414553b-68cf-4d34-8ed6-d50e8e0966b5" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Lead" attributeName="type" />
+					<munit-tools:with-attribute whereValue="Insert Lead" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="b90417f4-0948-46f8-a326-e1a90dc8bf22" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-core-leads-create-lead-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="spy-transform-payload-to-java" doc:id="b2d5d321-91ae-4feb-9d0e-611bf889113b" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="transform-payload-to-java" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="e8da88d6-7b99-45f7-8554-c5ef38570e14" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="assert-equals-conatains-duplicates?" doc:id="0e8693dc-c0f6-49c4-aa78-5ab3db455a02" actual='#[payload.items[0].exception.localizedMessage contains "DUPLICATES_DETECTED"]' expected="#[true]"/>
+					<munit-tools:assert-equals doc:name="assert-equals-status-code" doc:id="eda69058-6039-4eae-93c6-1561c0870cee" actual="#[payload.items.statusCode[0]]" expected='#["DUPLICATES_DETECTED"]'/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-core-leads-request-payload" doc:id="4d07e431-5989-41e8-997a-92c892975706" >
+				<munit:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-core-leads-request.json')]" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\leads:application\json:salesforce-core-template-config" doc:id="0148f962-8b30-42d9-9403-7baa2f59215f" name="post:\leads:application\json:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="9d8fb86c-da3d-43df-8515-13e260d96d19" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="4d138c0d-41f2-4632-b621-4fbe636e0a57" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="2215cafb-bf1f-4a15-85fa-d6fb14b907db" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e2f88475-3f3e-44bd-af7e-81bf30946c1e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="64e85fab-f9c7-4b08-9c7a-f59cd18c67f5" processor="att-mule-applicationlogger:log-message" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="823cd6ee-ddc7-402e-b05a-5d7d30366585" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="verify-logger" doc:id="41359481-af66-48b1-8ca1-42e9ff600bba" processor="att-mule-applicationlogger:log-message">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="53fe911c-31c0-4af3-876c-577677c6d21a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		
+</munit:validation>
+	</munit:test>
+	<munit:test name="salesforce-core-template-test-suite-put:\contact\(id):application\json:salesforce-core-template-configTest" doc:id="8c01a46f-c582-411f-8e60-bcfd5948a81b" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="mock-salesforce-update-contact" doc:id="dca588c7-709c-4b94-926d-891b4693e603" processor="salesforce:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="update-contact" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="ffda7a3e-2d83-4211-8565-1f87c8c9bdaa" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Salesforce_Config_OAuth" attributeName="config-ref" />
+					<munit-tools:with-attribute whereValue="Contact" attributeName="type" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-update-contact-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="set-update-contact-request-payload" doc:id="0f11b70f-35f6-4f6e-99fe-73444cdab32d" >
+				<munit:payload value="#[MunitTools::getResourceAsString('sample_data/salesforce-update-contact-request.json')]" mediaType="application/json" />
+				<munit:attributes value='#[{"uriParams": {"id": "0035w000035zPHjAAM"}}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to put:\contact\(id):application\json:salesforce-core-template-config" doc:id="8f7f4120-51eb-494c-b8e4-32282e32e9b4" name="put:\contact\(id):application\json:salesforce-core-template-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="assert-equals-payload-success?" doc:id="023c3455-1cf5-49df-ae69-0ffcc46bd282" actual="#[payload.items[0].payload.success]" expected="#[true]"/>
+			<munit-tools:assert-equals doc:name="assert-equals-id" doc:id="a4005200-4f84-4ee4-af39-253f92df9610" actual="#[payload.items[0].payload.id]" expected='#["0035w000035zPHjAAM"]'/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

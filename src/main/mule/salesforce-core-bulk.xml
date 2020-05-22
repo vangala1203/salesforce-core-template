@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd 
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
+
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="23345337-0a1e-453a-85ea-d4db79c2c41c" basePath="/api.php" >
+		<http:request-connection host="uzby.com" port="443" />
+	</http:request-config>
+	<sub-flow name="process-contacts-bulk-sub-flow">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="02610875-9730-4dde-9964-7886694171b6"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\contacts"
+			message="Start of flow  process-contacts-bulk-sub-flow" />
+		<ee:transform doc:name="transform-req-to-csv"
+			doc:id="5f9ac044-33d5-47ee-8ece-b9164e3054bd">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/csv
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create-job-bulk-api-v2
+			operation="upsert" doc:name="Create job bulk api v 2"
+			doc:id="90485a57-401e-4536-98f9-7486882a3ce8"
+			config-ref="Salesforce_Config_OAuth" objectType="Contact"
+			externalIdFieldName="Id" />
+		<ee:transform doc:name="transform-payload-to-java"
+			doc:id="a5ae0080-66e4-4c3f-8afd-7f3a7f9496c9">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="batchID" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<until-successful
+			maxRetries="${secure::salesforce.batch.maxRetries}"
+			doc:name="Until Successful"
+			doc:id="d88f7619-a095-43e9-a078-1933cf79c73e"
+			millisBetweenRetries="${secure::salesforce.batch.timeBetweenRetries}">
+			<salesforce:retrieve-job-failed-results-bulk-v2
+				doc:name="Retrieve job failed results bulk v 2"
+				doc:id="21bcc89b-77af-4937-b593-8c7c700d2a24"
+				config-ref="Salesforce_Config_OAuth" id="#[vars.batchID]" />
+		</until-successful>
+		<ee:transform doc:name="transform-failed-results-to-json"
+			doc:id="e7cf32b4-295b-4f24-8ebe-1bb839db33e8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="71e2e29b-a9d6-44ed-8fd6-238caf8a65e0"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\contacts"
+			message="End of flow  process-contacts-bulk-sub-flow" />
+
+
+
+	</sub-flow>
+<sub-flow name="process-accounts-bulk-sub-flow">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="5cd39dd3-9d37-4771-b9fb-525f9de851ab"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\accounts"
+			message="Start of flow  process-accounts-bulk-sub-flow" />
+		<foreach doc:name="For Each" doc:id="0fbe6e60-7b3d-4443-983a-126f7f41f05d" >
+			<http:request method="GET" doc:name="Request" doc:id="68a5ce93-c3f4-47d0-981f-6ab5cc2904d7" config-ref="HTTP_Request_configuration">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"min" : "4",
+	"max" : "8"
+}]]]></http:query-params>
+		</http:request>
+		</foreach>
+		<ee:transform doc:name="transform-req-to-csv"
+			doc:id="ba231d5f-61a1-4170-9caa-64967dd7d9c7">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/csv
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create-job-bulk-api-v2
+			operation="upsert" doc:name="Create job bulk api v 2"
+			doc:id="db396228-8047-430c-8f36-339e651b9d13"
+			config-ref="Salesforce_Config_BasicAuth" objectType="Account"
+			externalIdFieldName="Id" />
+		<ee:transform doc:name="transform-payload-to-java"
+			doc:id="e5fc6789-6033-4eee-88ab-1bcaa15c4867">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="batchID" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<until-successful
+			maxRetries="${secure::salesforce.batch.maxRetries}"
+			doc:name="Until Successful"
+			doc:id="73e04ca1-335a-4af5-99a2-27957be5dbd0"
+			millisBetweenRetries="${secure::salesforce.batch.timeBetweenRetries}">
+			<salesforce:retrieve-job-failed-results-bulk-v2
+				doc:name="Retrieve job failed results bulk v 2"
+				doc:id="2af3f537-ffe0-467c-a2d3-dd44a6d91951"
+				config-ref="Salesforce_Config_OAuth" id="#[vars.batchID]" />
+		</until-successful>
+		<ee:transform doc:name="transform-failed-results-to-json"
+			doc:id="8b5fbe15-de27-4964-b40c-c1367d4ecf82">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="53f574a0-4312-4079-97e9-4ca444b3409f"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="post:\accounts"
+			message="End of flow  process-accounts-bulk-sub-flow" />
+
+
+
+	</sub-flow>
+</mule>
+	

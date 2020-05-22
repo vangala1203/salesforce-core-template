@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd 
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd">
+	<flow name="subscribe-salesforce-core-streaming-flow"
+		doc:id="07baee6c-ee86-4521-ad40-0b74cbb14899">
+		<salesforce:subscribe-channel-listener
+			doc:name="Subscribe channel listener"
+			doc:id="028f5337-6a0e-4f97-a7db-cd3f4edaeea5"
+			config-ref="Salesforce_Config_BasicAuth"
+			streamingChannel="${secure::salesforce.streamingChannel}" />
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="c8aaacc1-b3e2-48ec-8304-af37c762c994"
+			message="Start of subscribe-salesforce-core-streaming-flow" config-ref="ATT_Mule_Application_Logger_Config"/>
+		<ee:transform doc:name="map-payload-to-json"
+			doc:id="33460c94-deb0-4fdc-af85-987aa5e1983c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="96151bfb-8184-46eb-a4ea-ceaf1cc05f20"
+			message="End of subscribe-salesforce-core-streaming-flow" config-ref="ATT_Mule_Application_Logger_Config"/>
+	</flow>
+	<flow name="replay-salesforce-core-streaming-flow"
+		doc:id="3a24bde4-89c7-4f6c-b02f-c7c70846c1a0">
+		<salesforce:replay-channel-listener
+			replayOption="FROM_REPLAY_ID" doc:name="Replay channel listener"
+			doc:id="8b0a6193-2e97-4e36-aae3-c2d04e1fe28d"
+			config-ref="Salesforce_Config_BasicAuth" replayId="-1"
+			streamingChannel="${secure::salesforce.replayChannel}" />
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="58b2ff05-b536-4d90-90a8-4bd607467987"
+			message="Start of replay-salesforce-core-streaming-flow" config-ref="ATT_Mule_Application_Logger_Config"/>
+		<ee:transform doc:name="map-payload-to-json"
+			doc:id="77829760-4adb-47b9-a418-1ec3dd1fb602">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="c2d380f3-05ce-4de0-87d9-eabb3141d949"
+			message="End of replay-salesforce-core-streaming-flow" config-ref="ATT_Mule_Application_Logger_Config"/>
+	</flow>
+	<flow name="contacts-topic-listener" doc:id="b686631c-9a0f-4a6f-82e2-7c7913e8e121" >
+		<salesforce:subscribe-topic-listener doc:name="Subscribe topic listener" doc:id="38af8ef7-5c41-486e-b6b1-7c2597c4ecfc" config-ref="Salesforce_Config_OAuth" topic="ContactUpdates_new"/>
+		<att-mule-applicationlogger:log-message doc:name="log-start" doc:id="b8ce7dac-e15d-4786-ab92-ae5d6f7c9a03" config-ref="ATT_Mule_Application_Logger_Config" message="start of flow contacts-topic-listener"/>
+		<ee:transform doc:name="transform-payload-to-java" doc:id="a6a4e702-00af-46ea-b9fa-de984afdc1ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message doc:name="log-end" doc:id="989e83fa-2899-4d17-b6a8-32b3ad34c6dc" message="end of flow contacts-topic-listener" config-ref="ATT_Mule_Application_Logger_Config"/>
+	</flow>
+</mule>
+	

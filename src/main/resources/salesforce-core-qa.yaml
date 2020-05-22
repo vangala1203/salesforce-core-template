@@ -1,0 +1,50 @@
+#general properties
+
+leadMerge: "enabled"
+http:
+  port: "8082"
+api:
+  version: "v1"
+  id: "12345"
+#common properties
+salesforce:
+  http:
+    host: "login.salesforce.com"
+    port: "443"
+#HTTP Based Rest Properties    
+    reconAttempts: "3"
+    reconFrequency: "20000"
+    maxConnections: "10"
+    connTimeout: "120000"
+    basePath: "/services/apexrest/"
+    accountPath: "Account"
+#Basic Auth Properties
+  userName: "![LQ1+tsqnq1K31Rr0F30LrxYTrOfm+1g+2wVzvv326V4=]"
+  password: "![lV7xXBChzsgFYi3SIv4oIg==]"
+  securityToken: "![vIMcnuHVtiEncyHaql6596OuAd/Gw+zz2ZDdBy8yfS8=]"
+  authorizationURL: "https://login.salesforce.com/services/Soap/u/46.0"
+  tokenURL: "https://login.salesforce.com/services/oauth2/token"
+#OAuth Properties
+  consumerKey: "![6F51WWA6IwivWdEnqkszorti4QW+KuHMe9INeir885x8vceKQ7YAUoOOc9lQiQcvyEGUkLFUkPGzz39zPUNfs1HFwtkJoMCh8btcOc6ZF9BoBSiHIDVkxkpzLxlWUROE]"
+  consumerSecret: "![HUvKsRDzla4m+VqXjYuifW+aZhXg4q1e84qBY9m4Uaw5dvPyGl+S+VsUAdrffIyVcycyiPDGc3iw8i5GYIpDXCWXQxgQ7aumwAR4kHjNx54=]"#General Reconnection Properties
+  connection:
+    frequency: "2000"
+    attempts: "3"
+    ttl: "30"
+    entries: "10"
+      
+#Streaming API Properties
+  replayChannel: "/data/AccountChangeEvent"
+  streamingChannel: "/data/AccountChangeEvent"
+#salesforce bulk operations properties
+  batch:
+    maxRetries: "5"
+    timeBetweenRetries: "10000"
+    
+#asyn flow properties
+messaging:
+  host: "localhost"
+  port: "9102"
+  
+  
+    

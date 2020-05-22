@@ -1,0 +1,12 @@
+{
+    "getAccountOutput": {
+        "Phone": "(650) 867-3450",
+        "Website": "www.genepoint.com",
+        "attributes": {
+            "type": "Account",
+            "url": "/services/data/v48.0/sobjects/Account/0015w00002ACqDAAA1"
+        },
+        "Id": "0015w00002ACqDAAA1",
+        "Name": "GenePoint"
+    }
+}

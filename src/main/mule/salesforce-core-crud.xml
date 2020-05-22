@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd">
+	<sub-flow name="validate-response-sub-flow" doc:id="63d2bd45-0f6d-460a-a24d-1a143fc94dbd" >
+		<choice doc:name="Choice" doc:id="705b6aec-5446-4908-8af5-b219f8cbaa9d">
+			<when expression='#[payload.successful == "true"]'>
+				<logger level="INFO" doc:name="log-no-error" doc:id="af107acd-1570-4c88-b907-06312ebf1c2a" message="log-no-errors-returned-from-salesforce" />
+				<att-mule-applicationlogger:log-message doc:name="Log Message" doc:id="cf1dcc8c-e7c0-4bd3-b534-0ea5a00f8b9f" message="log-no-errors-returned-from-salesforce" method="post:\contact" config-ref="ATT_Mule_Application_Logger_Config" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="log-error" doc:id="8e0b551c-0436-4c9d-99c4-a200bcd10db0" message="log-received-error-from-salesforce-or-retrying-message" />
+				<att-mule-applicationlogger:log-message doc:name="Log Message" doc:id="fffbf53a-f6f2-4c45-a7b7-d10a6a394224" method="post:\contact" message="log-received-error-from-salesforce-or-retrying-message" config-ref="ATT_Mule_Application_Logger_Config" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="upsert-contact-sub-flow"
+		doc:id="f79fb6dd-1755-4732-b4ef-3fe830d61475">
+		<set-variable value='#[now() as String {format: "A"}]' doc:name="startTime" doc:id="bc2c4fce-3a98-4b3d-8a20-7f5bd2782bd7" variableName="startTime"/>
+		<salesforce:upsert doc:name="call-salesforce-upsert"
+			doc:id="ec38a6a7-28cc-4f7c-aba5-2f64fa112b8a"
+			config-ref="Salesforce_Config_OAuth" objectType="Contact"
+			externalIdFieldName="Id" >
+			<salesforce:records ><![CDATA[#[[payload]]]]></salesforce:records>
+		</salesforce:upsert>
+		<logger level="INFO" doc:name="Logger" doc:id="c894935f-fa0e-42a8-be94-0047a4268b46" message='#["time taken for upsert contact operation:" ++ ((((now() as String {format: "A"}) - vars.startTime)) as String) ++ " milli seconds"]'/>
+		<ee:transform doc:name="convert-response-to-json"
+			doc:id="2d416280-59ae-4bb0-af89-5af96eeb3117">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="validate-response-sub-flow" doc:id="2c37a495-e214-4507-a95f-33a74e4bd081" name="validate-response-sub-flow" />
+	</sub-flow>
+	<sub-flow name="query-all-sub-flow"
+		doc:id="ae32068a-d0a3-44ca-9a13-f85f4a259702">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="b9253bac-c90c-4f65-82bd-88193c9c2351"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="get:\sf-query"
+			message="Start of flow log-start-of-query-all-salesforce" />
+		<ee:transform doc:name="extract-contact-id" doc:id="a0b3c081-e1ad-4aaf-ac73-c89f9301d4d6" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="contactID" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.uriParams.id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:query-all
+			doc:name="get-contacts"
+			doc:id="d9f21838-0f1a-4cd9-a256-74b9d2dcc328"
+			config-ref="Salesforce_Config_OAuth">
+			<salesforce:salesforce-query>SELECT FirstName,Id,LastName FROM
+				Contact WHERE Id = ':contactID'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"contactID" : vars.contactID
+}]]]></salesforce:parameters>
+		</salesforce:query-all>
+		<ee:transform doc:name="convert-response-to-json"
+			doc:id="421f81e2-2616-4cae-9952-362d043ed8e0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="a5b9bf20-283e-4c43-942b-2607432aabf4"
+			config-ref="ATT_Mule_Application_Logger_Config"
+			method="get:\sf-query"
+			message="End of flow log-start-of-query-all-salesforce" />
+	</sub-flow>
+	<sub-flow name="update-contact-sub-flow"
+		doc:id="4af0e24a-2d49-4e39-93c0-24f9bf7ad3c7">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="bece97ed-ef18-4498-a472-0ae1d8b87b7b"
+			config-ref="ATT_Mule_Application_Logger_Config" method="put:\contact"
+			message="Start of flow update-contact-sub-flow" />
+		<ee:transform doc:name="create-payload-to-update" doc:id="a25498ef-634e-4712-b73f-3b56a60377b2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Id: attributes.uriParams.id,
+	LastName: payload.LastName,
+	FirstName: payload.FirstName
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update doc:name="update-contact" doc:id="ffda7a3e-2d83-4211-8565-1f87c8c9bdaa" config-ref="Salesforce_Config_OAuth" type="Contact">
+		</salesforce:update>
+		<ee:transform doc:name="convert-response-to-json"
+			doc:id="0a8fa6d2-c0c7-4b95-a60d-4068c4f3ae6f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="validate-response-sub-flow" doc:id="ef430a5f-90a8-4cec-adcd-64932e2781cd" name="validate-response-sub-flow"/>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="cde88158-15d4-42bc-b7c7-e15d0e2c3777"
+			config-ref="ATT_Mule_Application_Logger_Config" method="put:\contact"
+			message="End of flow update-contact-sub-flow" />
+	</sub-flow>
+	<sub-flow name="delete-contact-sub-flow"
+		doc:id="9348d94c-3684-4757-803b-84896cce8002">
+		<att-mule-applicationlogger:log-message
+			doc:name="log-start" doc:id="4a4f22b4-6051-416a-8bca-ca447344de0d"
+			config-ref="ATT_Mule_Application_Logger_Config" method="delete:\contact"
+			message="Start of flow delete-contact-sub-flow" />
+		<salesforce:delete doc:name="delete-contact" doc:id="92f70119-54da-461c-92c1-4b02e2d7491e" config-ref="Salesforce_Config_OAuth">
+			<salesforce:ids ><![CDATA[#[[attributes.uriParams.id]]]]></salesforce:ids>
+		</salesforce:delete>
+		<ee:transform doc:name="convert-response-to-json"
+			doc:id="e0348bab-d761-4a75-b038-009eb97a948e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<att-mule-applicationlogger:log-message
+			doc:name="log-end" doc:id="7cf0c658-7622-4f06-be70-0b154fb031fb"
+			config-ref="ATT_Mule_Application_Logger_Config" method="put:\contact"
+			message="End of flow update-contact-sub-flow" />
+	</sub-flow>
+</mule>

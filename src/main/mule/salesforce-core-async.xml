@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:att-mule-applicationlogger="http://www.mulesoft.org/schema/mule/att-mule-applicationlogger"
+	xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/att-mule-applicationlogger http://www.mulesoft.org/schema/mule/att-mule-applicationlogger/current/mule-att-mule-applicationlogger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="publish-to-queue" doc:id="81eb5894-e4d1-454d-8e76-2c1610d06376" >
+		<att-mule-applicationlogger:log-message doc:name="log-start" doc:id="dc2f9cfe-0c34-4423-b57e-4a2ecaa1a188" config-ref="ATT_Mule_Application_Logger_Config" message="Start of publish-to-queue flow"/>
+		<att-mule-applicationlogger:log-message doc:name="log-end" doc:id="8b3a565a-1a6f-454a-b3e7-4c2e25b665af" config-ref="ATT_Mule_Application_Logger_Config" message="End of publish-to-queue flow"/>
+	</flow>
+</mule>
